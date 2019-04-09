@@ -21,8 +21,8 @@
 #define SHOOT_FRIC_PWM_ADD_VALUE    100.0f
 
 //射击摩擦轮激光打开 关闭
-#define SHOOT_ON_KEYBOARD KEY_PRESSED_OFFSET_Q
-#define SHOOT_OFF_KEYBOARD KEY_PRESSED_OFFSET_E
+#define SHOOT_ON_KEYBOARD KEY_PRESSED_OFFSET_F
+#define SHOOT_OFF_KEYBOARD KEY_PRESSED_OFFSET_R
 
 //射击完成后 子弹弹出去后，判断时间，以防误触发
 #define SHOOT_DONE_KEY_OFF_TIME 10
@@ -44,8 +44,8 @@
 #define Ready_Trigger_Speed 6.0f
 
 #define KEY_OFF_JUGUE_TIME 500
-#define SWITCH_TRIGGER_ON 0   //开关开启
-#define SWITCH_TRIGGER_OFF 1  //开关按下
+#define SWITCH_TRIGGER_ON 0   //开关按下
+#define SWITCH_TRIGGER_OFF 1  //开关开启
 
 //卡单时间 以及反转时间
 #define BLOCK_TIME 700
@@ -71,7 +71,8 @@ typedef struct
     ramp_function_source_t fric1_ramp;
     ramp_function_source_t fric2_ramp;
     //const motor_measure_t *shoot_motor_measure;
-    volatile Encoder *encoder;
+    volatile Encoder *encoder1;//小弹丸拨轮
+    volatile Encoder *encoder2;//大弹丸拨轮
     fp32 speed;
     fp32 speed_set;
     fp32 angle;
@@ -106,11 +107,10 @@ typedef enum
     SHOOT_DONE,
 } shoot_mode_e;
 
-extern volatile Encoder TREncoder;
+extern volatile Encoder TR1Encoder;//小弹丸拨轮
+extern volatile Encoder TR2Encoder;//大弹丸拨轮
 
 void TriggerMotor_PID_Config(void);
-void TriggerMotor_Ctrl(void);
-void TriggerMotor_Out(void);
-int16_t* CloudMotor_Out(void);
+int16_t shoot_control_loop(void);
 
 #endif

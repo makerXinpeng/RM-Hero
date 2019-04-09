@@ -209,6 +209,5 @@ extern volatile Encoder GMPitchEncoder;
 
 void CloudMotor_Config(void);
 void CloudMotor_Ctrl(void);
-int16_t* CloudMotor_Out(void);
 static fp32 GIMBAL_PID_Calc(PidTypeDef *pid, fp32 ref, fp32 set);
 #endif //CLOUDMOTOR_H

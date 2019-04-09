@@ -225,10 +225,10 @@ static void chassis_set_contorl(chassis_move_t *chassis_move_control)
   */
 static void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set, const fp32 wz_set)
 {
-    fp32 speed_change=1.0f;
-    if(chassis_move.chassis_RC->key.v & KEY_PRESSED_OFFSET_SHIFT || chassis_move.chassis_RC->rc.s[0]==1)
-        speed_change=1.0f;
-    else
+    fp32 speed_change=2.0f;
+//    if(chassis_move.chassis_RC->key.v & KEY_PRESSED_OFFSET_SHIFT || chassis_move.chassis_RC->rc.s[0]==1)
+//        speed_change=1.0f;
+//    else
         speed_change=2.0f;
     chassis_move.motor_chassis[0].speed_set = - vx_set + vy_set + wz_set * CHASSIS_WZ_RC_SEN;
     chassis_move.motor_chassis[1].speed_set =   vx_set + vy_set + wz_set * CHASSIS_WZ_RC_SEN;

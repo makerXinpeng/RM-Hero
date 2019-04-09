@@ -209,19 +209,15 @@ void CloudMotor_Ctrl(void)
     
     Yaw_Can_Set_Current = gimbal_control.gimbal_yaw_motor.gimbal_motor_speed_pid.out;
     Pitch_Can_Set_Current = gimbal_control.gimbal_pitch_motor.gimbal_motor_speed_pid.out;
+    Shoot_Can_Set_Current = shoot_control_loop();
+    
+    Set_CloudMotor_Current(Yaw_Can_Set_Current,Pitch_Can_Set_Current,Shoot_Can_Set_Current);
 }
 
 static void gimbal_motor_relative_angle_control(Gimbal_Motor_t *gimbal_motor)
 {
     gimbal_motor->motor_gyro_set = GIMBAL_PID_Calc(&gimbal_motor->gimbal_motor_position_pid,gimbal_motor->relative_angle,gimbal_motor->relative_angle_set);
     gimbal_motor->gimbal_motor_speed_pid.out = PID_Calc(&gimbal_motor->gimbal_motor_speed_pid,gimbal_motor->motor_gyro,gimbal_motor->motor_gyro_set);
-}
-
-int16_t *CloudMotor_Out()
-{
-    CloudOut[0]=gimbal_control.gimbal_yaw_motor.gimbal_motor_speed_pid.out;
-    CloudOut[1]=gimbal_control.gimbal_pitch_motor.gimbal_motor_speed_pid.out;
-    return CloudOut;
 }
 
 static fp32 GIMBAL_PID_Calc(PidTypeDef *pid, fp32 ref, fp32 set)

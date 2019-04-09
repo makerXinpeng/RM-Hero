@@ -51,6 +51,7 @@ static void shoot_done_control(void);
   */
 static void shoot_ready_control(void);
 
+
 /**
   * @brief          射击初始化，初始化PID，遥控器指针，电机指针
   * @author         RM
@@ -59,15 +60,12 @@ static void shoot_ready_control(void);
   */
 void TriggerMotor_PID_Config(void)
 {
-    //static const fp32 Trigger_SpeedPID[3]={85,0.0,10};
     static const fp32 Trigger_speed_pid[3] = {TRIGGER_ANGLE_PID_KP, TRIGGER_ANGLE_PID_KI, TRIGGER_ANGLE_PID_KD};
-    //初始化PID
-    //PID_Init(&trigger_motor_pid,PID_POSITION,Trigger_SpeedPID,10000,5000);
-    
     //遥控器指针
     shoot_rc = get_remote_control_point();
     //电机指针
-    trigger_motor.encoder = &TREncoder;
+    trigger_motor.encoder1 = &TR1Encoder;
+    trigger_motor.encoder2 = &TR2Encoder;
     //初始化PID
     PID_Init(&trigger_motor_pid, PID_POSITION, Trigger_speed_pid, TRIGGER_READY_PID_MAX_OUT, TRIGGER_READY_PID_MAX_IOUT);
     //更新数据
@@ -76,7 +74,7 @@ void TriggerMotor_PID_Config(void)
     ramp_init(&trigger_motor.fric2_ramp, SHOOT_CONTROL_TIME * 0.01f, Fric_DOWN, Fric_OFF);
 
     trigger_motor.ecd_count = 0;
-    trigger_motor.angle = trigger_motor.encoder->ecd_value * Motor_ECD_TO_ANGLE;
+    trigger_motor.angle = trigger_motor.encoder1->ecd_value * Motor_ECD_TO_ANGLE;
     trigger_motor.given_current = 0;
     trigger_motor.move_flag = 0;
     trigger_motor.set_angle = trigger_motor.angle;
@@ -84,6 +82,7 @@ void TriggerMotor_PID_Config(void)
     trigger_motor.speed_set = 0.0f;
     trigger_motor.BulletShootCnt = 0;
 }
+
 
 
 /**
@@ -133,7 +132,6 @@ int16_t shoot_control_loop(void)
         static uint16_t fric_pwm1 = Fric_OFF;
         static uint16_t fric_pwm2 = Fric_OFF;
 
-
         shoot_laser_on();       //激光开启
 
 
@@ -182,23 +180,8 @@ int16_t shoot_control_loop(void)
         trigger_motor.given_current = (int16_t)(trigger_motor_pid.out);
         shoot_CAN_Set_Current = trigger_motor.given_current;
     }
-
+    
     return shoot_CAN_Set_Current;
-}
-
-void TriggerMotor_Ctrl(void)
-{
-    Shoot_Feedback_Update();
-    if(trigger_motor.key== SWITCH_TRIGGER_OFF)
-        trigger_motor.speed_set = 0;
-    else
-        trigger_motor.speed_set = (shoot_rc->rc.s[0] == 1) ? 5 : 0;
-    //trigger_motor.speed_set = (shoot_rc->mouse.press_l == 1) ? 5 : 0;
-    trigger_motor_pid.out=PID_Calc(&trigger_motor_pid,trigger_motor.speed,trigger_motor.speed_set);
-}
-void TriggerMotor_Out(void)
-{
-	Set_CloudMotor_Current(CloudMotor_Out()[0],CloudMotor_Out()[1],trigger_motor_pid.out);
 }
 
 /**
@@ -271,21 +254,21 @@ static void Shoot_Feedback_Update(void)
 //    //二阶低通滤波
 //    speed_fliter_1 = speed_fliter_2;
 //    speed_fliter_2 = speed_fliter_3;
-//    speed_fliter_3 = speed_fliter_2 * fliter_num[0] + speed_fliter_1 * fliter_num[1] + (trigger_motor.encoder->rpm * Motor_RMP_TO_SPEED) * fliter_num[2];
+//    speed_fliter_3 = speed_fliter_2 * fliter_num[0] + speed_fliter_1 * fliter_num[1] + (trigger_motor.encoder1->rpm * Motor_RMP_TO_SPEED) * fliter_num[2];
 
-    trigger_motor.speed = trigger_motor.encoder->rpm * Motor_RMP_TO_SPEED;//speed_fliter_3;
+    trigger_motor.speed = trigger_motor.encoder1->rpm * Motor_RMP_TO_SPEED;//speed_fliter_3;
 
-    if (trigger_motor.encoder->round_cnt == FULL_COUNT)
+    if (trigger_motor.encoder1->round_cnt == FULL_COUNT)
     {
-        trigger_motor.encoder->round_cnt = -(FULL_COUNT - 1);
+        trigger_motor.encoder1->round_cnt = -(FULL_COUNT - 1);
     }
-    else if (trigger_motor.encoder->round_cnt == -FULL_COUNT)
+    else if (trigger_motor.encoder1->round_cnt == -FULL_COUNT)
     {
-        trigger_motor.encoder->round_cnt = FULL_COUNT - 1;
+        trigger_motor.encoder1->round_cnt = FULL_COUNT - 1;
     }
     
     //计算输出轴角度
-    trigger_motor.angle = trigger_motor.encoder->ecd_value * Motor_ECD_TO_ANGLE;
+    trigger_motor.angle = trigger_motor.encoder1->ecd_value * Motor_ECD_TO_ANGLE;
     //微动开关
     trigger_motor.key = Butten_Trig_Pin;
     //鼠标按键
