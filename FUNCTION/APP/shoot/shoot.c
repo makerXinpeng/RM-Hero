@@ -13,11 +13,7 @@ static PidTypeDef trigger_motor_pid;         //电机PID
 static Shoot_Motor_t trigger_motor;          //射击数据
 static shoot_mode_e shoot_mode = SHOOT_STOP; //射击状态机
 //微动开关IO
-#define Butten_Trig_Front_Pin GPIO_ReadInputDataBit(GPIOF, GPIO_Pin_1)
-#define Butten_Trig_back_Pin GPIO_ReadInputDataBit(GPIOF, GPIO_Pin_0)
-
-
-
+#define Butten_Trig_Pin GPIO_ReadInputDataBit(GPIOF, GPIO_Pin_1)
 
 /**
   * @brief          射击状态机设置，遥控器上拨一次开启，再上拨关闭，下拨1次发射1颗，一直处在下，则持续发射，用于3min准备时间清理子弹
@@ -61,17 +57,17 @@ static void shoot_ready_control(void);
   * @param[in]      void
   * @retval         返回空
   */
-void shoot_init(void)
+void TriggerMotor_PID_Config(void)
 {
-    static const fp32 Trigger_SpeedPID[3]={85,0.0,10};
+    //static const fp32 Trigger_SpeedPID[3]={85,0.0,10};
     static const fp32 Trigger_speed_pid[3] = {TRIGGER_ANGLE_PID_KP, TRIGGER_ANGLE_PID_KI, TRIGGER_ANGLE_PID_KD};
     //初始化PID
-    PID_Init(&trigger_motor_pid,PID_POSITION,Trigger_SpeedPID,10000,5000);
+    //PID_Init(&trigger_motor_pid,PID_POSITION,Trigger_SpeedPID,10000,5000);
     
     //遥控器指针
     shoot_rc = get_remote_control_point();
     //电机指针
-    trigger_motor.encoder = TREncoder;
+    trigger_motor.encoder = &TREncoder;
     //初始化PID
     PID_Init(&trigger_motor_pid, PID_POSITION, Trigger_speed_pid, TRIGGER_READY_PID_MAX_OUT, TRIGGER_READY_PID_MAX_IOUT);
     //更新数据
@@ -80,7 +76,7 @@ void shoot_init(void)
     ramp_init(&trigger_motor.fric2_ramp, SHOOT_CONTROL_TIME * 0.01f, Fric_DOWN, Fric_OFF);
 
     trigger_motor.ecd_count = 0;
-    trigger_motor.angle = trigger_motor.encoder.ecd_value * Motor_ECD_TO_ANGLE;
+    trigger_motor.angle = trigger_motor.encoder->ecd_value * Motor_ECD_TO_ANGLE;
     trigger_motor.given_current = 0;
     trigger_motor.move_flag = 0;
     trigger_motor.set_angle = trigger_motor.angle;
@@ -190,18 +186,20 @@ int16_t shoot_control_loop(void)
     return shoot_CAN_Set_Current;
 }
 
-void TriggerMotor_Ctrl(RC_ctrl_t *Rc)
+void TriggerMotor_Ctrl(void)
 {
-    trigger_motor_pid.set = +(Rc->rc.s[0] == 1) ? 200 : 0;
-    //trigger_motor_pid.set = (Rc->mouse.press_l == 1) ? 220 : 0;
-    trigger_motor_pid.out=PID_Calc(&trigger_motor_pid,TREncoder.filter_rate,trigger_motor_pid.set);
+    Shoot_Feedback_Update();
+    if(trigger_motor.key== SWITCH_TRIGGER_OFF)
+        trigger_motor.speed_set = 0;
+    else
+        trigger_motor.speed_set = (shoot_rc->rc.s[0] == 1) ? 5 : 0;
+    //trigger_motor.speed_set = (shoot_rc->mouse.press_l == 1) ? 5 : 0;
+    trigger_motor_pid.out=PID_Calc(&trigger_motor_pid,trigger_motor.speed,trigger_motor.speed_set);
 }
 void TriggerMotor_Out(void)
 {
 	Set_CloudMotor_Current(CloudMotor_Out()[0],CloudMotor_Out()[1],trigger_motor_pid.out);
 }
-
-
 
 /**
   * @brief          射击状态机设置，遥控器上拨一次开启，再上拨关闭，下拨1次发射1颗，一直处在下，则持续发射，用于3min准备时间清理子弹
@@ -263,42 +261,33 @@ static void Shoot_Set_Mode(void)
 static void Shoot_Feedback_Update(void)
 {
 
-    static fp32 speed_fliter_1 = 0.0f;
-    static fp32 speed_fliter_2 = 0.0f;
-    static fp32 speed_fliter_3 = 0.0f;
+//    static fp32 speed_fliter_1 = 0.0f;
+//    static fp32 speed_fliter_2 = 0.0f;
+//    static fp32 speed_fliter_3 = 0.0f;
 
-    //拨弹轮电机速度滤波一下
-    static const fp32 fliter_num[3] = {1.725709860247969f, -0.75594777109163436f, 0.030237910843665373f};
+//    //拨弹轮电机速度滤波一下
+//    static const fp32 fliter_num[3] = {1.725709860247969f, -0.75594777109163436f, 0.030237910843665373f};
 
-    //二阶低通滤波
-    speed_fliter_1 = speed_fliter_2;
-    speed_fliter_2 = speed_fliter_3;
-    speed_fliter_3 = speed_fliter_2 * fliter_num[0] + speed_fliter_1 * fliter_num[1] + (trigger_motor.encoder.rpm * Motor_RMP_TO_SPEED) * fliter_num[2];
-    trigger_motor.speed = speed_fliter_3;
+//    //二阶低通滤波
+//    speed_fliter_1 = speed_fliter_2;
+//    speed_fliter_2 = speed_fliter_3;
+//    speed_fliter_3 = speed_fliter_2 * fliter_num[0] + speed_fliter_1 * fliter_num[1] + (trigger_motor.encoder->rpm * Motor_RMP_TO_SPEED) * fliter_num[2];
 
-    //电机圈数重置， 因为输出轴旋转一圈， 电机轴旋转 36圈，将电机轴数据处理成输出轴数据，用于控制输出轴角度
-    if (trigger_motor.encoder.ecd_value - trigger_motor.encoder.last_raw_value > Half_ecd_range)
+    trigger_motor.speed = trigger_motor.encoder->rpm * Motor_RMP_TO_SPEED;//speed_fliter_3;
+
+    if (trigger_motor.encoder->round_cnt == FULL_COUNT)
     {
-        trigger_motor.ecd_count--;
+        trigger_motor.encoder->round_cnt = -(FULL_COUNT - 1);
     }
-    else if (trigger_motor.encoder.ecd_value - trigger_motor.encoder.last_raw_value < -Half_ecd_range)
+    else if (trigger_motor.encoder->round_cnt == -FULL_COUNT)
     {
-        trigger_motor.ecd_count++;
+        trigger_motor.encoder->round_cnt = FULL_COUNT - 1;
     }
-
-    if (trigger_motor.ecd_count == FULL_COUNT)
-    {
-        trigger_motor.ecd_count = -(FULL_COUNT - 1);
-    }
-    else if (trigger_motor.ecd_count == -FULL_COUNT)
-    {
-        trigger_motor.ecd_count = FULL_COUNT - 1;
-    }
-
+    
     //计算输出轴角度
-    trigger_motor.angle = (trigger_motor.ecd_count * ecd_range + trigger_motor.encoder.ecd_value) * Motor_ECD_TO_ANGLE;
+    trigger_motor.angle = trigger_motor.encoder->ecd_value * Motor_ECD_TO_ANGLE;
     //微动开关
-    trigger_motor.key = Butten_Trig_Front_Pin;
+    trigger_motor.key = Butten_Trig_Pin;
     //鼠标按键
     trigger_motor.last_press_l = trigger_motor.press_l;
     trigger_motor.last_press_r = trigger_motor.press_r;
@@ -365,7 +354,7 @@ static void shoot_bullet_control(void)
     if (trigger_motor.move_flag == 0 && shoot_mode == SHOOT_BULLET)
     {
         trigger_motor.set_angle = rad_format(trigger_motor.set_angle + PI_Four);
-        trigger_motor.cmd_time = xTaskGetTickCount();
+//        trigger_motor.cmd_time = xTaskGetTickCount();
         trigger_motor.move_flag = 1;
     }
 
@@ -374,17 +363,17 @@ static void shoot_bullet_control(void)
     {
         //没到达一直设置旋转速度
         trigger_motor.speed_set = TRIGGER_SPEED;
-        trigger_motor.run_time = xTaskGetTickCount();
+//        trigger_motor.run_time = xTaskGetTickCount();
 
-        //堵转判断
-        if (trigger_motor.run_time - trigger_motor.cmd_time > BLOCK_TIME && trigger_motor.run_time - trigger_motor.cmd_time < REVERSE_TIME + BLOCK_TIME && fabs(trigger_motor.speed) < REVERSE_SPEED_LIMIT)
-        {
-            trigger_motor.speed_set = -TRIGGER_SPEED;
-        }
-        else if (trigger_motor.run_time - trigger_motor.cmd_time > REVERSE_TIME + BLOCK_TIME || fabs(trigger_motor.speed) > REVERSE_SPEED_LIMIT)
-        {
-            trigger_motor.cmd_time = xTaskGetTickCount();
-        }
+//        //堵转判断
+//        if (trigger_motor.run_time - trigger_motor.cmd_time > BLOCK_TIME && trigger_motor.run_time - trigger_motor.cmd_time < REVERSE_TIME + BLOCK_TIME && fabs(trigger_motor.speed) < REVERSE_SPEED_LIMIT)
+//        {
+//            trigger_motor.speed_set = -TRIGGER_SPEED;
+//        }
+//        else if (trigger_motor.run_time - trigger_motor.cmd_time > REVERSE_TIME + BLOCK_TIME || fabs(trigger_motor.speed) > REVERSE_SPEED_LIMIT)
+//        {
+//            trigger_motor.cmd_time = xTaskGetTickCount();
+//        }
     }
     else
     {
@@ -454,7 +443,7 @@ static void shoot_ready_control(void)
         if (trigger_motor.move_flag == 0)
         {
             trigger_motor.set_angle = rad_format(trigger_motor.set_angle + PI_Ten);
-            trigger_motor.cmd_time = xTaskGetTickCount();
+//            trigger_motor.cmd_time = xTaskGetTickCount();
             trigger_motor.move_flag = 1;
         }
 
@@ -462,16 +451,16 @@ static void shoot_ready_control(void)
         {
             //角度达到判断
             trigger_motor.speed_set = Ready_Trigger_Speed;
-            trigger_motor.run_time = xTaskGetTickCount();
-            //堵转判断
-            if (trigger_motor.run_time - trigger_motor.cmd_time > BLOCK_TIME && trigger_motor.run_time - trigger_motor.cmd_time < REVERSE_TIME + BLOCK_TIME && fabs(trigger_motor.speed) < REVERSE_SPEED_LIMIT)
-            {
-                trigger_motor.speed_set = -Ready_Trigger_Speed;
-            }
-            else if (trigger_motor.run_time - trigger_motor.cmd_time > REVERSE_TIME + BLOCK_TIME || fabs(trigger_motor.speed) > REVERSE_SPEED_LIMIT)
-            {
-                trigger_motor.cmd_time = xTaskGetTickCount();
-            }
+//            trigger_motor.run_time = xTaskGetTickCount();
+//            //堵转判断
+//            if (trigger_motor.run_time - trigger_motor.cmd_time > BLOCK_TIME && trigger_motor.run_time - trigger_motor.cmd_time < REVERSE_TIME + BLOCK_TIME && fabs(trigger_motor.speed) < REVERSE_SPEED_LIMIT)
+//            {
+//                trigger_motor.speed_set = -Ready_Trigger_Speed;
+//            }
+//            else if (trigger_motor.run_time - trigger_motor.cmd_time > REVERSE_TIME + BLOCK_TIME || fabs(trigger_motor.speed) > REVERSE_SPEED_LIMIT)
+//            {
+//                trigger_motor.cmd_time = xTaskGetTickCount();
+//            }
         }
         else
         {

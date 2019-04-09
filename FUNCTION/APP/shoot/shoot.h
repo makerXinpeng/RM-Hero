@@ -44,8 +44,8 @@
 #define Ready_Trigger_Speed 6.0f
 
 #define KEY_OFF_JUGUE_TIME 500
-#define SWITCH_TRIGGER_ON 0
-#define SWITCH_TRIGGER_OFF 1
+#define SWITCH_TRIGGER_ON 0   //开关开启
+#define SWITCH_TRIGGER_OFF 1  //开关按下
 
 //卡单时间 以及反转时间
 #define BLOCK_TIME 700
@@ -56,9 +56,9 @@
 #define PI_Ten 0.314f
 
 //拨弹轮电机PID
-#define TRIGGER_ANGLE_PID_KP 800.0f
+#define TRIGGER_ANGLE_PID_KP 500.0f
 #define TRIGGER_ANGLE_PID_KI 0.5f
-#define TRIGGER_ANGLE_PID_KD 0.0f
+#define TRIGGER_ANGLE_PID_KD 30.0f
 
 #define TRIGGER_BULLET_PID_MAX_OUT 15000.0f
 #define TRIGGER_BULLET_PID_MAX_IOUT 5000.0f
@@ -106,8 +106,10 @@ typedef enum
     SHOOT_DONE,
 } shoot_mode_e;
 
+extern volatile Encoder TREncoder;
+
 void TriggerMotor_PID_Config(void);
-void TriggerMotor_Ctrl(RC_ctrl_t *Rc);
+void TriggerMotor_Ctrl(void);
 void TriggerMotor_Out(void);
 int16_t* CloudMotor_Out(void);
 

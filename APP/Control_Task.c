@@ -60,12 +60,12 @@ void Control_Task(RC_ctrl_t *Rc)
 
     if(Rc->rc.s[1] == 1)
     {
-        if(pwm1<1600)//1850)//1600-2312)//1180 snail)
+        if(pwm1<1000)//1850)//1600-2312)//1180 snail)
         {
             pwm1+=2;
             fric1_on(pwm1);
         }
-        else if(pwm2<1600)
+        else if(pwm2<1000)
         {
             pwm2+=2;
             fric2_on(pwm2);
@@ -86,6 +86,6 @@ void Control_Task(RC_ctrl_t *Rc)
     chassis_control_loop();
     CloudMotor_Ctrl();
 
-    TriggerMotor_Ctrl(Rc);
+    TriggerMotor_Ctrl();
     TriggerMotor_Out();
 }

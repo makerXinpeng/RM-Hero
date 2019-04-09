@@ -67,7 +67,7 @@ void BSP_init(void)
     chassis_init();
     
     CloudMotor_Config();
-    shoot_init();
+    TriggerMotor_PID_Config();
     
     //24输出控制口 初始化
     power_ctrl_configuration();
