@@ -71,8 +71,8 @@ void CloudMotor_Config(void)
     PID_Init(&gimbal_control.gimbal_yaw_motor.gimbal_motor_speed_pid,PID_POSITION,YAW_SpeedPID,YAW_SPEED_PID_MAX_OUT,YAW_SPEED_PID_MAX_IOUT);
     PID_Init(&gimbal_control.gimbal_yaw_motor.gimbal_motor_position_pid,PID_POSITION,YAW_PositionPID,YAW_ENCODE_RELATIVE_PID_MAX_OUT,YAW_ENCODE_RELATIVE_PID_MAX_IOUT);    
     //yaw电机限幅
-    gimbal_control.gimbal_yaw_motor.max_relative_angle = 0.6;
-    gimbal_control.gimbal_yaw_motor.min_relative_angle = -0.6;
+    gimbal_control.gimbal_yaw_motor.max_relative_angle = 0.7;
+    gimbal_control.gimbal_yaw_motor.min_relative_angle = -0.7;
     gimbal_control.gimbal_yaw_motor.offset_ecd = 4096;
     //yaw电机数据初始化
     gimbal_control.gimbal_yaw_motor.relative_angle_set = 0;
@@ -83,9 +83,9 @@ void CloudMotor_Config(void)
     PID_Init(&gimbal_control.gimbal_pitch_motor.gimbal_motor_speed_pid,PID_POSITION,PITCH_SpeedPID,PITCH_SPEED_PID_MAX_OUT,PITCH_SPEED_PID_MAX_IOUT);
     PID_Init(&gimbal_control.gimbal_pitch_motor.gimbal_motor_position_pid,PID_POSITION,PITCH_PositionPID,PITCH_ENCODE_RELATIVE_PID_MAX_OUT,PITCH_ENCODE_RELATIVE_PID_MAX_IOUT);
     //pitch电机限幅
-    gimbal_control.gimbal_pitch_motor.max_relative_angle = 0.6;
-    gimbal_control.gimbal_pitch_motor.min_relative_angle = -0.6;
-    gimbal_control.gimbal_pitch_motor.offset_ecd = 4096;//步兵1200 英雄 4096
+    gimbal_control.gimbal_pitch_motor.max_relative_angle = 0.1;//向下限幅
+    gimbal_control.gimbal_pitch_motor.min_relative_angle = -0.8;//向上限幅
+    gimbal_control.gimbal_pitch_motor.offset_ecd = 4496;//步兵4800 英雄 4596
     //pitch电机数据初始化
     gimbal_control.gimbal_pitch_motor.relative_angle_set = 0;
     gimbal_control.gimbal_pitch_motor.motor_gyro_set = gimbal_control.gimbal_pitch_motor.motor_gyro;

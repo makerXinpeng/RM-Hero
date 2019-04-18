@@ -6,7 +6,7 @@
 //2312   1600
 //MT4114 1850
 
-#define Fric_UP 1100
+#define Fric_UP 1180
 #define Fric_DOWN 1000//1300
 #define Fric_OFF 800
 

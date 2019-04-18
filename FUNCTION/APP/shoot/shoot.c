@@ -83,8 +83,6 @@ void TriggerMotor_PID_Config(void)
     trigger_motor.BulletShootCnt = 0;
 }
 
-
-
 /**
   * @brief          射击循环
   * @author         RM
@@ -98,25 +96,25 @@ int16_t shoot_control_loop(void)
     Shoot_Set_Mode();        //设置状态机
     Shoot_Feedback_Update(); //更新数据
 
-    //发射状态控制
-    if (shoot_mode == SHOOT_BULLET)
-    {
-        trigger_motor_pid.max_out = TRIGGER_BULLET_PID_MAX_OUT;
-        trigger_motor_pid.max_iout = TRIGGER_BULLET_PID_MAX_IOUT;
-        shoot_bullet_control();
-    }
-    //发射完成状态控制
-    else if (shoot_mode == SHOOT_DONE)
-    {
-        shoot_done_control();
-    }
-    //发射准备状态控制
-    else if (shoot_mode == SHOOT_READY)
-    {
-        trigger_motor_pid.max_out = TRIGGER_READY_PID_MAX_OUT;
-        trigger_motor_pid.max_iout = TRIGGER_READY_PID_MAX_IOUT;
-        shoot_ready_control();
-    }
+//    //发射状态控制
+//    if (shoot_mode == SHOOT_BULLET)
+//    {
+//        trigger_motor_pid.max_out = TRIGGER_BULLET_PID_MAX_OUT;
+//        trigger_motor_pid.max_iout = TRIGGER_BULLET_PID_MAX_IOUT;
+//        shoot_bullet_control();
+//    }
+//    //发射完成状态控制
+//    else if (shoot_mode == SHOOT_DONE)
+//    {
+//        shoot_done_control();
+//    }
+//    //发射准备状态控制
+//    else if (shoot_mode == SHOOT_READY)
+//    {
+//        trigger_motor_pid.max_out = TRIGGER_READY_PID_MAX_OUT;
+//        trigger_motor_pid.max_iout = TRIGGER_READY_PID_MAX_IOUT;
+//        shoot_ready_control();
+//    }
 
     if (shoot_mode == SHOOT_STOP)
     {
@@ -173,7 +171,11 @@ int16_t shoot_control_loop(void)
 
         shoot_fric1_on(fric_pwm1);
         shoot_fric2_on(fric_pwm2);
-
+        
+        if(shoot_rc->mouse.press_l||shoot_rc->rc.s[0]==1)
+            trigger_motor.speed_set=5;
+        else
+            trigger_motor.speed_set=0;
         //计算拨弹轮电机PID
         PID_Calc(&trigger_motor_pid, trigger_motor.speed, trigger_motor.speed_set);
 
@@ -337,7 +339,6 @@ static void shoot_bullet_control(void)
     if (trigger_motor.move_flag == 0 && shoot_mode == SHOOT_BULLET)
     {
         trigger_motor.set_angle = rad_format(trigger_motor.set_angle + PI_Four);
-//        trigger_motor.cmd_time = xTaskGetTickCount();
         trigger_motor.move_flag = 1;
     }
 
@@ -346,17 +347,6 @@ static void shoot_bullet_control(void)
     {
         //没到达一直设置旋转速度
         trigger_motor.speed_set = TRIGGER_SPEED;
-//        trigger_motor.run_time = xTaskGetTickCount();
-
-//        //堵转判断
-//        if (trigger_motor.run_time - trigger_motor.cmd_time > BLOCK_TIME && trigger_motor.run_time - trigger_motor.cmd_time < REVERSE_TIME + BLOCK_TIME && fabs(trigger_motor.speed) < REVERSE_SPEED_LIMIT)
-//        {
-//            trigger_motor.speed_set = -TRIGGER_SPEED;
-//        }
-//        else if (trigger_motor.run_time - trigger_motor.cmd_time > REVERSE_TIME + BLOCK_TIME || fabs(trigger_motor.speed) > REVERSE_SPEED_LIMIT)
-//        {
-//            trigger_motor.cmd_time = xTaskGetTickCount();
-//        }
     }
     else
     {
@@ -411,7 +401,7 @@ static void shoot_ready_control(void)
         trigger_motor_pid.out = 0.0f;
         trigger_motor_pid.Iout = 0.0f;
 
-        trigger_motor.speed_set = 0.0f;
+        //trigger_motor.speed_set = 0.0f;
         trigger_motor.move_flag = 0;
         trigger_motor.key_time = 0;
     }
@@ -426,7 +416,6 @@ static void shoot_ready_control(void)
         if (trigger_motor.move_flag == 0)
         {
             trigger_motor.set_angle = rad_format(trigger_motor.set_angle + PI_Ten);
-//            trigger_motor.cmd_time = xTaskGetTickCount();
             trigger_motor.move_flag = 1;
         }
 
@@ -434,16 +423,6 @@ static void shoot_ready_control(void)
         {
             //角度达到判断
             trigger_motor.speed_set = Ready_Trigger_Speed;
-//            trigger_motor.run_time = xTaskGetTickCount();
-//            //堵转判断
-//            if (trigger_motor.run_time - trigger_motor.cmd_time > BLOCK_TIME && trigger_motor.run_time - trigger_motor.cmd_time < REVERSE_TIME + BLOCK_TIME && fabs(trigger_motor.speed) < REVERSE_SPEED_LIMIT)
-//            {
-//                trigger_motor.speed_set = -Ready_Trigger_Speed;
-//            }
-//            else if (trigger_motor.run_time - trigger_motor.cmd_time > REVERSE_TIME + BLOCK_TIME || fabs(trigger_motor.speed) > REVERSE_SPEED_LIMIT)
-//            {
-//                trigger_motor.cmd_time = xTaskGetTickCount();
-//            }
         }
         else
         {

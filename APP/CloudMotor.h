@@ -11,14 +11,14 @@
 #include "remote_control.h"
 #include "shoot.h"
 //pitch 速度环 PID参数以及 PID最大输出，积分输出
-#define PITCH_SPEED_PID_KP 2000.0f//600.0f//英雄2000.0f
+#define PITCH_SPEED_PID_KP 2000.0f//英雄2000.0f
 #define PITCH_SPEED_PID_KI 20.0f
 #define PITCH_SPEED_PID_KD 0.0f
 #define PITCH_SPEED_PID_MAX_OUT 30000.0f
 #define PITCH_SPEED_PID_MAX_IOUT 5000.0f
 
 //yaw 速度环 PID参数以及 PID最大输出，积分输出
-#define YAW_SPEED_PID_KP 2500.0f//2200.0f
+#define YAW_SPEED_PID_KP 2000.0f//2200.0f
 #define YAW_SPEED_PID_KI 20.0f
 #define YAW_SPEED_PID_KD 0.0f
 #define YAW_SPEED_PID_MAX_OUT 30000.0f
@@ -48,10 +48,10 @@
 #define PITCH_ENCODE_RELATIVE_PID_MAX_IOUT 0.0f
 
 //yaw 角度环 角度由编码器 PID参数以及 PID最大输出，积分输出
-#define YAW_ENCODE_RELATIVE_PID_KP 30.0//8.0f
+#define YAW_ENCODE_RELATIVE_PID_KP 50.0//8.0f
 #define YAW_ENCODE_RELATIVE_PID_KI 0.0f
 #define YAW_ENCODE_RELATIVE_PID_KD 10.0f
-#define YAW_ENCODE_RELATIVE_PID_MAX_OUT 18.0f
+#define YAW_ENCODE_RELATIVE_PID_MAX_OUT 10.0f
 #define YAW_ENCODE_RELATIVE_PID_MAX_IOUT 0.0f
 
 //任务初始化 空闲一段时间
