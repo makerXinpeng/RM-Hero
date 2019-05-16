@@ -84,7 +84,7 @@ void CloudMotor_Config(void)
     PID_Init(&gimbal_control.gimbal_pitch_motor.gimbal_motor_position_pid,PID_POSITION,PITCH_PositionPID,PITCH_ENCODE_RELATIVE_PID_MAX_OUT,PITCH_ENCODE_RELATIVE_PID_MAX_IOUT);
     //pitch电机限幅
     gimbal_control.gimbal_pitch_motor.max_relative_angle = 0.8;//向下限幅  旧步兵：0.8  官方步兵：0.4
-    gimbal_control.gimbal_pitch_motor.min_relative_angle = -0.2;//向上限幅 旧步兵：-1.6 官方步兵：-0.3
+    gimbal_control.gimbal_pitch_motor.min_relative_angle = -0.1;//向上限幅 旧步兵：-1.6 官方步兵：-0.3
     gimbal_control.gimbal_pitch_motor.offset_ecd = 4096;//官方步兵6200 旧步兵 英雄 4096
     //pitch电机数据初始化
     gimbal_control.gimbal_pitch_motor.relative_angle_set = 0;

@@ -25,7 +25,7 @@
 #define SHOOT_OFF_KEYBOARD KEY_PRESSED_OFFSET_R
 
 //射击完成后 子弹弹出去后，判断时间，以防误触发
-#define SHOOT_DONE_KEY_OFF_TIME 4//20
+#define SHOOT_DONE_KEY_OFF_TIME 6//20
 //鼠标长按判断
 #define PRESS_LONG_TIME 400
 //遥控器射击开关打下档一段时间后 连续发射子弹 用于清单
@@ -40,10 +40,10 @@
 #define Motor_ECD_TO_ANGLE 0.000021305288720633905968306772076277f
 #define FULL_COUNT 18
 //拨弹速度
-#define TRIGGER_SPEED 4.0f
-#define Ready_Trigger_Speed 6.0f
+#define TRIGGER_SPEED 10.0f
+#define Ready_Trigger_Speed 7.0f
 
-#define KEY_OFF_JUGUE_TIME 60//500
+#define KEY_OFF_JUGUE_TIME 20//500
 #define SWITCH_TRIGGER_ON 0   
 #define SWITCH_TRIGGER_OFF 1  
 

@@ -183,7 +183,8 @@ int16_t shoot_control_loop(void)
         trigger_motor.given_current = (int16_t)(trigger_motor_pid.out);
         shoot_CAN_Set_Current = trigger_motor.given_current;
     }
-    
+    if(switch_is_mid(shoot_rc->rc.s[Shoot_RC_Channel]))
+        shoot_CAN_Set_Current=0;
     return shoot_CAN_Set_Current;
 }
 
